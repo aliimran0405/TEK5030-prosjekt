@@ -2,7 +2,7 @@ import cv2
 import os
 
 # Path for where you store your input vids
-INPUT_VID_DIR_PATH = "./input_vid" 
+INPUT_VID_DIR_PATH = "./input_vid/" 
 
 
 
@@ -14,7 +14,7 @@ vid_idx = int(input("Which video would you like to process? (Enter idx) \n").str
 
 
 # Init capture object for video file
-cap = cv2.VideoCapture("./input_vid/" + inp_vids[0])
+cap = cv2.VideoCapture(INPUT_VID_DIR_PATH + inp_vids[0])
 
 
 if (not cap.isOpened()):
