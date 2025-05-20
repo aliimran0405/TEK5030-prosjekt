@@ -3,6 +3,9 @@ import os
 from ultralytics import solutions, YOLO
 import torch
 import time
+import numpy as np
+from ball_tracker import BallTracker
+from synne import PlayerTracker
 
 
 # Path for where you store your input vids
@@ -27,13 +30,10 @@ if (not cap.isOpened()):
 w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
 video_writer = cv2.VideoWriter("instance_segmentation_result.avi", cv2.VideoWriter_fourcc(*"mp4v"), fps=fps, frameSize=(w,h))
 
-isegment = solutions.InstanceSegmentation(show=False,
-                                          model="yolo11n-seg.pt",
-                                          tracker="botsort.yaml",
-                                          classes=[0],
-                                          device='cuda' if torch.cuda.is_available() else 'cpu'
-                                          )
+model = YOLO(model="yolo11n-seg.pt")
 
+ball_tracker = BallTracker()
+player_tracker = PlayerTracker(model)
 
 # Read video file frame for frame until finished
 while (cap.isOpened()):
@@ -41,8 +41,11 @@ while (cap.isOpened()):
 
     if ret == True:
         #cv2.imshow('Frame', frame)
-        results = isegment(frame)
-        video_writer.write(results.plot_im)
+        results_ball = ball_tracker.process_frame(frame)
+        results_player = player_tracker.process_frame(frame)
+        result = cv2.addWeighted(results_ball, 0.5, results_player, 0.5, 0)
+        video_writer.write(result)
+        cv2.imshow("TRACKER",result)
 
         # Press q to quit
         if cv2.waitKey(25) & 0xFF == ord('q'):
