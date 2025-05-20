@@ -5,6 +5,7 @@ from ultralytics.utils.plotting import Annotator, colors
 from ultralytics.data.augment import LetterBox
 import numpy as np
 from sklearn.cluster import KMeans as KMeans
+from scipy.special import softmax
 
 class PlayerTracker():
 
@@ -32,7 +33,10 @@ class PlayerTracker():
         # Blå (inkl. lilla)
         elif 86 <= h <= 145:
             return "Blå"
-
+        
+    def bgr_to_name(self, bgr):
+        print(bgr)
+        return ""
 
     def process_frame(self, frame):
 
@@ -60,34 +64,25 @@ class PlayerTracker():
         if masks is not None and track_ids is not None:
             mask_data = masks.data.cpu().numpy()
             players_colors = {}
+            bgr_values = np.array([])
 
             for mask, player_id in zip(mask_data, track_ids):
                 resized_mask = cv2.resize(mask, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_NEAREST)
                 binary_mask = resized_mask > 0.5
                 # Pixels for this player [B, G, R]
                 player_pixel = frame[binary_mask]
-                player_pixel = player_pixel[(player_pixel[:,1] < 150)]
+                
+                #player_pixel = player_pixel[(player_pixel[:,1] < 150)]
+                mean_color = np.mean(player_pixel, axis=0)
+                bgr_values = np.append(bgr_values, mean_color, axis=1)
+                print(bgr_values.shape)
 
-                # Kmean clustering for å finne farge istedenfor å bruke mean
-                if player_pixel.shape[0] > 10:
-                    kmeans = KMeans(n_clusters=2, random_state=0).fit(player_pixel)
-                    unique, counts = np.unique(kmeans.labels_, return_counts=True)
-                    dominant_index = unique[np.argmax(counts)]
-                    dominant_color = kmeans.cluster_centers_[dominant_index].astype(np.uint8)
-                    hsv_pixel = cv2.cvtColor(np.uint8([[dominant_color]]), cv2.COLOR_BGR2HSV)
-                    h, s, v = hsv_pixel[0][0]
-                    color_name = self.hsv_to_color_name((h, s, v))
-                else:
-                    color_name = 'ukjent'
-
-
-                # Legger kun til farge på en spiller en gang
-                if player_id not in players_colors:
-                    players_colors[player_id] = color_name
 
                 # Plot masks, en farge på alle - bytte dette ulik farge på de to lagene?
                 annotator.masks(masks.data, colors=[((4, 42, 255))],
                                 im_gpu=im_gpu)
+
+            #kmeans = KMeans(n_clusters=2, random_state=0).fit(bgr_values)
 
         for b, t, c in zip(boxes, track_ids, clss):
             if c == 0:
@@ -95,7 +90,7 @@ class PlayerTracker():
             elif c == 32:
                 name = 'ball'
 
-            l = f"{name}, id:{t}"
+            l = f"{name}, id:{t}, color: {players_colors[t]}"
             annotator.box_label(b, color=(221, 0, 186), label= l)
         return frame
 

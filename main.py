@@ -7,7 +7,7 @@ import numpy as np
 from ball_tracker import BallTracker
 from synne import PlayerTracker
 
-
+"""
 # Path for where you store your input vids
 INPUT_VID_DIR_PATH = "./input_vid/" 
 
@@ -18,10 +18,10 @@ INPUT_VID_DIR_PATH = "./input_vid/"
 inp_vids = os.listdir(INPUT_VID_DIR_PATH)
 print('\n', inp_vids, '\n')
 vid_idx = int(input("Which video would you like to process? (Enter idx) \n").strip())
-
+"""
 
 # Init capture object for video file
-cap = cv2.VideoCapture(INPUT_VID_DIR_PATH + inp_vids[0])
+cap = cv2.VideoCapture("fotball2.mov")
 if (not cap.isOpened()):
     raise Exception("Could not find video stream")
 
