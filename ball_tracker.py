@@ -4,7 +4,7 @@ import json
 from ultralytics import YOLO
 
 class BallTracker():
-    def __init__(self, model_path='runs/detect/football_yolo4/weights/best.pt', confidence_threshold=0.35):
+    def __init__(self, model_path='runs/detect/football_yolo/weights/best.pt', confidence_threshold=0.1):
         self.tracker_model = YOLO(model_path)
         self.threshold = confidence_threshold
         self.ball_class_id = 0  # Class ID for football in YOLO at default / 0 for self-trained model
@@ -40,8 +40,8 @@ class BallTracker():
                         'y': center[1],
                         'confidence': conf
                     })
-                    #self.trajectory_points.append(center)
-                    #self._draw_trajectory(annotated_frame)
+                    self.trajectory_points.append(center)
+                    self._draw_trajectory(annotated_frame)
                     ball_detected = True
         
         if ball_detected == False:
@@ -63,6 +63,11 @@ class BallTracker():
     def _get_center(self, bbox):
         x1, x2, y1, y2 = bbox
         return ((x1 + x2) // 2, (y1 + y2) // 2)
+    
+    def _draw_trajectory(self, frame):
+        if len(self.trajectory_points) > 1:
+            for i in range(1, len(self.trajectory_points)):
+                cv2.line(frame, self.trajectory_points[i-1], self.trajectory_points[i], (0, 0, 255), 2)
     
    
 

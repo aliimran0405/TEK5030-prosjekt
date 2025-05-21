@@ -1,2 +1,14 @@
 .venv
 input_vid
+
+ball_positions.json
+yolo11m.pt 
+yolo11n.pt 
+yolo11s.pt 
+yolov8m-seg.pt
+yolov8m.pt 
+yolov8n.pt 
+yolov8s.pt 
+yolov8x.pt
+football_dataset
+remove_labels.py
