@@ -14,6 +14,8 @@ class PlayerTracker():
     def __init__(self, model):
         self.model = model
         self.class_list = [0]
+        self._num_frames = 0
+        self.kmeans = KMeans(n_clusters=3, random_state=0)
 
 
     def remove_outliers(self, x : np.ndarray, normalizer : Normalizer, stand_scaler: StandardScaler, scale: bool = True):
@@ -27,7 +29,7 @@ class PlayerTracker():
 
 
     def process_frame(self, frame):
-
+        self._num_frames += 1
 
         results = self.model.track(frame, classes=self.class_list, tracker='botsort.yaml',  persist=True)[0]
         annotator = Annotator(frame, line_width=2)
@@ -78,25 +80,27 @@ class PlayerTracker():
             
             bgr_values = np.vstack(bgr_values)
             normalizer_bgr = Normalizer().fit(bgr_values)
-            norm_bgr = normalizer_bgr.transform(bgr_values)
+            norm_bgr = normalizer_bgr.transform(bgr_values)            
+            standard_scaler_bgr = StandardScaler().fit(bgr_values)
 
             """
-            standard_scaler_bgr = StandardScaler().fit(bgr_values)
             scaled_norm_bgr = standard_scaler_bgr.transform(normalizer_bgr.transform(bgr_values))
             standard_bgr = standard_scaler_bgr.transform(bgr_values)
             bgr_no_outliers = self.remove_outliers(bgr_values, normalizer_bgr, standard_scaler_bgr)
             """
 
-            kmeans_bgr = KMeans(n_clusters=3, random_state=0).fit(norm_bgr) # Kmeans with mean bgr values as features
+            if self._num_frames < 15:
+                print("FITTING KMEANS")
+                self.kmeans = self.kmeans.fit(norm_bgr) # Kmeans with mean bgr values as features
             
-
+            labels = self.kmeans.predict(norm_bgr)
 
 
             #labels = kmeans_hsv.predict(scaled_norm_hsv) # Kmeans with both bgr and hsv as features
             #labels = kmeans_bgr.predict(scaled_norm_bgr) # Kmeans with mean BGR as values
 
             # Run through labels for each player id and add to players_teams dict to accsess later.
-            for (idx, player_label) in enumerate(kmeans_bgr.labels_):
+            for (idx, player_label) in enumerate(labels):
                 players_teams[track_ids[idx]] = player_label
 
 
@@ -106,8 +110,8 @@ class PlayerTracker():
             elif c == 32:
                 name = 'ball'
 
-            #l = f"{name}, id:{t}, team: {players_teams[t]}"
-            l = f"team: {players_teams[t]}"
+            l = f"{name}, id:{t}"
+            #l = f"team: {players_teams[t]}"
             annotator.box_label(b, color=(221, 0, 186), label= l)
 
         print(frame.shape)

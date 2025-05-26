@@ -21,15 +21,16 @@ vid_idx = int(input("Which video would you like to process? (Enter idx) \n").str
 """
 
 # Init capture object for video file
-cap = cv2.VideoCapture("fotball2.mov")
+cap = cv2.VideoCapture("./input_vid/red_white_team.mov")
 if (not cap.isOpened()):
     raise Exception("Could not find video stream")
 
 
 # Video writer
 w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
-video_writer = cv2.VideoWriter("instance_segmentation_result.avi", cv2.VideoWriter_fourcc(*"mp4v"), fps=fps, frameSize=(w,h))
+video_writer = cv2.VideoWriter("instance_segmentation_result_.avi", cv2.VideoWriter_fourcc(*"mp4v"), fps=fps, frameSize=(640,640))
 
+print(fps)
 
 MODEL_NAME = "best.pt"
 model = YOLO(model="./models/yolo11m-seg.pt")
@@ -38,22 +39,25 @@ ball_tracker = BallTracker()
 player_tracker = PlayerTracker(model)
 
 # Read video file frame for frame until finished
+n_frames = 0
 while (cap.isOpened()):
     ret, frame = cap.read()
 
     if ret == True:
         frame = cv2.resize(frame, (640, 640))
-        #cv2.imshow('Frame', frame)
         results_ball = ball_tracker.process_frame(frame)
         results_player = player_tracker.process_frame(frame)
         result = cv2.addWeighted(results_ball, 0.5, results_player, 0.5, 0)
-        video_writer.write(result)
-        cv2.imshow("TRACKER",result)
+        video_writer.write(results_player)
+        cv2.imshow("TRACKER",results_player)
 
         # Press q to quit
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
-
+        
+        n_frames += 1
+        if n_frames > 590:
+            break
 
     else:
         break
