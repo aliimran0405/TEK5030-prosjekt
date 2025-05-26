@@ -25,30 +25,6 @@ class PlayerTracker():
         return x_no_outliers_scaled
 
 
-    def hsv_to_color_name(self, hsv):
-        h, s, v = hsv
-        # Svart
-        if v < 50:
-            return "Svart"
-        # Hvit
-        if s < 30 and v > 180:
-            return "Hvit"
-        # Rød (inkl. oransje og rødtoner)
-        if h <= 25 or h >= 160:
-            return "Rød"
-        # Gul
-        elif 26 <= h <= 34:
-            return "Gul"
-        # Grønn
-        elif 35 <= h <= 85:
-            return "Grønn"
-        # Blå (inkl. lilla)
-        elif 86 <= h <= 145:
-            return "Blå"
-        
-    def bgr_to_name(self, bgr):
-        print(bgr)
-        return ""
 
     def process_frame(self, frame):
 
@@ -67,6 +43,7 @@ class PlayerTracker():
         # Prepare mask
         img = LetterBox(masks.shape[1:])(
             image=annotator.result())
+            
         im_gpu = (torch.as_tensor
                 (img, dtype=torch.float16,
                     device=masks.data.device)
@@ -98,32 +75,28 @@ class PlayerTracker():
                                 im_gpu=im_gpu)
             
 
-            """
+            
             bgr_values = np.vstack(bgr_values)
             normalizer_bgr = Normalizer().fit(bgr_values)
+            norm_bgr = normalizer_bgr.transform(bgr_values)
+
+            """
             standard_scaler_bgr = StandardScaler().fit(bgr_values)
             scaled_norm_bgr = standard_scaler_bgr.transform(normalizer_bgr.transform(bgr_values))
+            standard_bgr = standard_scaler_bgr.transform(bgr_values)
             bgr_no_outliers = self.remove_outliers(bgr_values, normalizer_bgr, standard_scaler_bgr)
-            kmeans_bgr = KMeans(n_clusters=2, random_state=0).fit(bgr_no_outliers) # Kmeans with mean bgr values as features
             """
 
+            kmeans_bgr = KMeans(n_clusters=3, random_state=0).fit(norm_bgr) # Kmeans with mean bgr values as features
             
-            hsv_values = np.vstack(hsv_values)
-            normalizer_hsv = Normalizer().fit(hsv_values)
-            standard_scaler_hsv = StandardScaler().fit(hsv_values)
-            scaled_hsv = standard_scaler_hsv.transform(hsv_values)
-            weighted_scaled_hsv = scaled_hsv * np.array([2, 1.2, 0.5]) # Hsv with more weight on Hue
-            print(weighted_scaled_hsv.shape)
-            hsv_no_outliers = self.remove_outliers(hsv_values, normalizer_hsv, standard_scaler_hsv)
-            kmeans_hsv = KMeans(n_clusters=2, random_state=0).fit(weighted_scaled_hsv) # Kmeans with mean hsv + std(hsv) values as features
-            
+
 
 
             #labels = kmeans_hsv.predict(scaled_norm_hsv) # Kmeans with both bgr and hsv as features
             #labels = kmeans_bgr.predict(scaled_norm_bgr) # Kmeans with mean BGR as values
 
             # Run through labels for each player id and add to players_teams dict to accsess later.
-            for (idx, player_label) in enumerate(kmeans_hsv.labels_):
+            for (idx, player_label) in enumerate(kmeans_bgr.labels_):
                 players_teams[track_ids[idx]] = player_label
 
 
@@ -136,6 +109,8 @@ class PlayerTracker():
             #l = f"{name}, id:{t}, team: {players_teams[t]}"
             l = f"team: {players_teams[t]}"
             annotator.box_label(b, color=(221, 0, 186), label= l)
+
+        print(frame.shape)
         return frame
 
 

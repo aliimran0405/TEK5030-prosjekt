@@ -30,7 +30,9 @@ if (not cap.isOpened()):
 w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
 video_writer = cv2.VideoWriter("instance_segmentation_result.avi", cv2.VideoWriter_fourcc(*"mp4v"), fps=fps, frameSize=(w,h))
 
-model = YOLO(model="yolo11n-seg.pt")
+
+MODEL_NAME = "best.pt"
+model = YOLO(model="./models/yolo11m-seg.pt")
 
 ball_tracker = BallTracker()
 player_tracker = PlayerTracker(model)
@@ -40,6 +42,7 @@ while (cap.isOpened()):
     ret, frame = cap.read()
 
     if ret == True:
+        frame = cv2.resize(frame, (640, 640))
         #cv2.imshow('Frame', frame)
         results_ball = ball_tracker.process_frame(frame)
         results_player = player_tracker.process_frame(frame)

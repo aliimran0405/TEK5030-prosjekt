@@ -4,10 +4,10 @@ import json
 from ultralytics import YOLO
 
 class BallTracker():
-    def __init__(self, model_path='yolo11n.pt', confidence_threshold=0.35):
+    def __init__(self, model_path='./models/best.pt', confidence_threshold=0.10):
         self.tracker_model = YOLO(model_path)
         self.threshold = confidence_threshold
-        self.ball_class_id = 32  # Class ID for football in YOLO at default / 0 for self-trained model
+        self.ball_class_id = 0  # Class ID for football in YOLO at default / 0 for self-trained model
         self.trajectory_points = []
         self.ball_position = [] # Stores the ball's position (frame_num, pos)
         self.current_frame_num = 0
