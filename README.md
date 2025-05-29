@@ -6,7 +6,7 @@
 - A PlayerTracker class that processes individual frames and uses instance segmentation to detect players on the field and split them into teams.
 - A main script that extracts frames from a video source using OpenCV and merges the results from Player- and Ball-Tracker then writes to a videofile.
 
-<img src="readme_example.gif" width="250" height="250"/>
+<img src="readme_example.gif" width="450" height="450"/>
 
 ### Install dependencies:
 
