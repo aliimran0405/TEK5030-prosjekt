@@ -1,2 +1,5 @@
 .venv
 input_vid
+report_img
+RESULT_VIDS
+ball_positions.json
