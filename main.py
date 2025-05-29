@@ -8,8 +8,7 @@ from ball_tracker import BallTracker
 from synne import PlayerTracker
 
 
-# Init capture object for video file
-INPUT_VID_PATH = "./input_vid/fotball2.mov"
+INPUT_VID_PATH = "./input_vid/fotball2.mov" # f.ex: "./some_dir/some_vid.mov"
 
 cap = cv2.VideoCapture(INPUT_VID_PATH)
 if (not cap.isOpened()):
@@ -20,9 +19,9 @@ if (not cap.isOpened()):
 w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
 video_writer = cv2.VideoWriter("instance_segmentation_result_.avi", cv2.VideoWriter_fourcc(*"mp4v"), fps=fps, frameSize=(640,640))
 
-MODEL_NAME = "best.pt"
 model = YOLO(model="./models/yolo11m-seg.pt")
 
+# Create instances of player and ball tracker classes
 ball_tracker = BallTracker()
 player_tracker = PlayerTracker(model)
 
@@ -46,7 +45,7 @@ while (cap.isOpened()):
             break
         
         n_frames += 1
-        if n_frames > 15*fps: #Only run for a certain amount of frames (set to )
+        if n_frames > 7*fps: #Only run for a certain amount of frames (set to )
             break
 
     else:
