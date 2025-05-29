@@ -18,6 +18,7 @@ class PlayerTracker():
         self.kmeans = KMeans(n_clusters=3, random_state=0)
 
 
+    # Helper function to remove outlier data (we ended up not using this)
     def remove_outliers(self, x : np.ndarray, normalizer : Normalizer, stand_scaler: StandardScaler, scale: bool = True):
         x_norm = normalizer.transform(x)
         z_scores = np.abs((x_norm - x_norm.mean(axis=0)) / x_norm.std(axis=0))
@@ -72,7 +73,7 @@ class PlayerTracker():
                 bgr_values.append(mean_color)
 
 
-                # Plot masks, en farge på alle - bytte dette ulik farge på de to lagene?
+                # Plot masks
                 annotator.masks(masks.data, colors=[((4, 42, 255))],
                                 im_gpu=im_gpu)
             
@@ -81,23 +82,12 @@ class PlayerTracker():
             bgr_values = np.vstack(bgr_values)
             normalizer_bgr = Normalizer().fit(bgr_values)
             norm_bgr = normalizer_bgr.transform(bgr_values)            
-            standard_scaler_bgr = StandardScaler().fit(bgr_values)
 
-            """
-            scaled_norm_bgr = standard_scaler_bgr.transform(normalizer_bgr.transform(bgr_values))
-            standard_bgr = standard_scaler_bgr.transform(bgr_values)
-            bgr_no_outliers = self.remove_outliers(bgr_values, normalizer_bgr, standard_scaler_bgr)
-            """
-
-            if self._num_frames < 15:
+            if self._num_frames < 15: # Fit the kmeans model only during the first 15 frames
                 print("FITTING KMEANS")
                 self.kmeans = self.kmeans.fit(norm_bgr) # Kmeans with mean bgr values as features
             
-            labels = self.kmeans.predict(norm_bgr)
-
-
-            #labels = kmeans_hsv.predict(scaled_norm_hsv) # Kmeans with both bgr and hsv as features
-            #labels = kmeans_bgr.predict(scaled_norm_bgr) # Kmeans with mean BGR as values
+            labels = self.kmeans.predict(norm_bgr) # Predict on the normalized BGR values 
 
             # Run through labels for each player id and add to players_teams dict to accsess later.
             for (idx, player_label) in enumerate(labels):
@@ -110,11 +100,10 @@ class PlayerTracker():
             elif c == 32:
                 name = 'ball'
 
-            l = f"{name}, id:{t}"
-            #l = f"team: {players_teams[t]}"
+            #l = f"{name}, id:{t}"
+            l = f"team: {players_teams[t]}"
             annotator.box_label(b, color=(221, 0, 186), label= l)
 
-        print(frame.shape)
         return frame
 
 
