@@ -45,7 +45,7 @@ while (cap.isOpened()):
             break
         
         n_frames += 1
-        if n_frames > 7*fps: #Only run for a certain amount of frames (set to )
+        if n_frames > 7*fps: #Only run for a certain amount of frames (set to seconds_wanted*fps of input stream)
             break
 
     else:
