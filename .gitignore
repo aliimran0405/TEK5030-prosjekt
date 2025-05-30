@@ -3,3 +3,5 @@ input_vid
 report_img
 RESULT_VIDS
 ball_positions.json
+__pycache__
+instance_segmentation_results_.avi
