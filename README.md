@@ -22,7 +22,7 @@ python3 -m pip install -r requirements.txt
 
 ### Usage
 
-Set INPUT_VID_DIR_PATH variable in 'main' to path of your input video dir, then run 'main'.
+Set INPUT_VID_DIR_PATH variable in 'main' to the path of your input video, then run 'main'.
 
 ```bash
 python main.py
